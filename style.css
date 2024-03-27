@@ -1,0 +1,215 @@
+
+
+:root {
+  --off-white: #e5e5e5;
+  --pink: #ffc7df;
+  --pure-black: #000;
+  --purple: #3c2442;
+  --teal: #00ffe6;
+}
+
+a {
+  color: var(--teal);
+}
+
+body {
+  background-color: var(--pink);
+  text-align: center;
+}
+
+button {
+  border-color: var(--purple);
+  border-radius: 10px;
+  color: var(--purple);
+  display: block;
+  font-size: 16px;
+  margin: 10px auto;
+}
+
+nav button {
+  background-color: var(--pink);
+  border: thick solid var(--teal);
+  color: var(--purple);
+  float: right;
+  margin: 10px;
+}
+
+footer {
+  background-color: var(--purple);
+  bottom: 0;
+  color: var(--pink);
+  height: 30px;
+  left: 0;
+  line-height: 30px;
+  position: fixed;
+  text-align: center;
+  vertical-align: middle;
+  width: 100%;
+}
+
+input {
+  display: block;
+  margin: 5px auto;
+}
+
+nav {
+  background-color: var(--purple);
+  color: var(--teal);
+  margin: 0;
+}
+
+.auth-alert-main,
+.auth-alert-modal {
+  color: var(--purple);
+  font-weight: bold;
+  margin-bottom: 0;
+}
+
+.container-fluid {
+  padding: 0;
+}
+
+.game-cell {
+  border: thick solid var(--purple);
+  color: var(--purple);
+  font-size: 50px;
+  height: 30vw;
+  line-height: 30vw;
+  text-align: center;
+  vertical-align: middle;
+  width: 30vw;
+}
+
+.game-row:first-of-type > .game-cell {
+  border-top: 0;
+}
+
+.game-row:last-of-type > .game-cell {
+  border-bottom: 0;
+}
+
+.game-row > .game-cell:first-of-type {
+  border-left: 0;
+}
+
+.game-row > .game-cell:last-of-type {
+  border-right: 0;
+}
+
+.hidden {
+  display: none;
+}
+
+.navbar {
+  margin-bottom: 0;
+}
+
+.player {
+  background-color: var(--off-white);
+  border: thin solid var(--purple);
+  border-radius: 20px;
+  color: var(--purple);
+  display: inline-block;
+  font-size: 16px;
+  font-weight: normal;
+  margin: 10px;
+  padding: 5px 15px;
+  text-align: center;
+}
+
+.row {
+  margin-left: 0;
+  margin-right: 0;
+  display: flex;
+}
+
+.player.active {
+  background-color: var(--teal);
+  border: solid var(--purple);
+  font-weight: bold;
+}
+
+.winning-cell {
+  background-color: var(--teal);
+}
+
+#surround-game-board {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+}
+
+#message {
+  color: var(--purple);
+  font-size: 18px;
+  padding: 5px;
+  text-align: center;
+}
+
+#player-turns > div {
+  text-align: center;
+}
+
+#rematch-button {
+  background-color: var(--teal);
+  border: thick solid var(--purple);
+  font-weight: bold;
+}
+
+@media screen and (min-width: 400px) and (max-width: 759px) {
+  .game-cell {
+    font-size: 75px;
+    height: 110px;
+    line-height: 110px;
+    width: 110px;
+  }
+
+  #game-board {
+    width: 330px;
+  }
+}
+
+@media screen and (min-width: 760px) {
+  main {
+    min-height: 500px;
+  }
+
+  .game-cell {
+    font-size: 100px;
+    height: 150px;
+    line-height: 150px;
+    width: 150px;
+  }
+
+  .game-row {
+    width: 450px;
+  }
+
+  .player.active {
+    background-color: var(--pink);
+    font-weight: bold;
+  }
+
+  #surround-game-board {
+    width: 62%;
+    height: calc(100vh - 80px);
+    margin-right: 0;
+  }
+
+  #surround-game-board,
+  #stats-n-stuff {
+    float: right;
+  }
+
+  #rematch-button {
+    background-color: var(--pink);
+  }
+
+  #stats-n-stuff {
+    background-color: var(--teal);
+    height: calc(100vh - 80px);
+    width: 38%;
+  }
+}
