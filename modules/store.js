@@ -8,7 +8,7 @@ const store = {
   oWins: 0,
   oDraws: 0,
   winningCells: [],
-  games = [];
+  games: []
 }
 
-module.exports = store
+export { store };

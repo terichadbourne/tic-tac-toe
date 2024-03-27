@@ -1,19 +1,19 @@
 'use strict'
 
 // require dependcies
-const store = require('./store')
-const ui = require('./ui')
+import { store }  from './store.js';
+import * as ui from './ui.js';
 
-// add event handlers for clicking on game board and for rematch button
 const addHandlers = function () {
-  // $('.game-cell').on('click', playHere)
-  // $('#rematch-button').on('click', startNewGame)
-  document.getElementByClass('game-cell').addEventListener("click", playHere);
-  document.getElementById('rematch-button').addEventListener("click", startNewGame);
+  ui.rematchButton.addEventListener("click", startNewGame);
+  ui.gameCells.forEach(gameCell => {
+    gameCell.addEventListener("click", playHere)
+  });
 }
 
 // start new game when rematch button is clicked
 const startNewGame = function (event) {
+  console.log('startNewGame');
   // clear message display
   ui.clearMessage()
   // set game state and current turn and clear out cells array
@@ -22,17 +22,15 @@ const startNewGame = function (event) {
   // create new game on the server
   onCreateGame()
   // set player x active and player o inactive
-  // $('#player-x').addClass('active')
-  // $('#player-o').removeClass('active')
   document.getElementById('player-x').classList.add('active');
   document.getElementById('player-o').classList.remove('active');
   // hide rematch button
-  // $('#rematch-button').addClass('hidden')
-  document.getElementById('rematch-button').classList.add('hidden');
+//   rematchButton.classList.add('hidden');
 }
 
 // steps to take when user clicks on a cell on the game board
 const playHere = function (event) {
+  console.log('playHere');
   // clear any previous messages
   ui.clearMessage()
   // if the game's not already over...
@@ -40,10 +38,10 @@ const playHere = function (event) {
     // if cell was blank, add symbol of current player to `store.cells` array,
     // redisplay symbols on all cells, then swap players
     // if ($(event.target).html() === '') {
-    if (getEventTarget(event).innerHTML === '') {
-      store.game.cells[event.target.id] = store.currentTurn
+    if (event.currentTarget.innerHTML === '') {
+      store.game.cells[event.currentTarget.id] = store.currentTurn
       // send new move to server (also will run displayCells and processMove
-      onUpdateGame(event.target.id, store.currentTurn)
+      onUpdateGame(event.currentTarget.id, store.currentTurn)
     // if cell was occupied, log error and prevent play and turn swap
     } else {
       ui.showMessage('That cell is already occupied. Try again!')
@@ -59,12 +57,14 @@ const swapTurns = function () {
   // swap value of store.currentTurn and toggle active classes
   if (store.currentTurn === 'x') {
     store.currentTurn = 'o'
-    // $('.player').toggleClass('active')
-    document.getElementByClass('player').classList.toggle("active");
+    ui.players.forEach(player => {
+      player.classList.toggle("active");
+    });
   } else if (store.currentTurn === 'o') {
     store.currentTurn = 'x'
-    // $('.player').toggleClass('active')
-    document.getElementByClass('player').classList.toggle("active");
+    ui.players.forEach(player => {
+      player.classList.toggle("active");
+    });
   }
 }
 
@@ -72,6 +72,10 @@ const swapTurns = function () {
 // winning line
 const winningLines = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7],
   [2, 5, 8], [0, 4, 8], [2, 4, 6]]
+
+const middleCell = 4
+
+const cornerCells = [0, 2, 6, 8]
 
 // callback function returns true if a cell contains an x or o already
 const cellOccupied = (cell) => {
@@ -81,6 +85,7 @@ const cellOccupied = (cell) => {
 // run when new player is logged in or new game is rquested, to create a new
 // game on the server and update the UI
 const onCreateGame = function (playerName) {
+  console.log('onCreateGame');
   store.game =
   { id: 1,
     cells: ["","","","","","","","",""],
@@ -106,6 +111,7 @@ const onCreateGame = function (playerName) {
 
 // save current game state to server and udpate display after each move
 const onUpdateGame = function (cellIndex, value) {
+  console.log('onUpdateGame');
   // gather data needed for AJAX call
   store.game.cells[cellIndex] = value;
   // refresh display to add x or o
@@ -116,13 +122,14 @@ const onUpdateGame = function (cellIndex, value) {
 
 // run when game is over to update status on server
 const onFinishGame = function () {
+  console.log('onFinishGame');
   // format data to show game is over
   store.game.over = true;
   // send to server
-  gameApi.updateGame(data)
+  // onUpdateGame(event.currentTarget.id, store.currentTurn)
   ui.displayCells()
   // $('#rematch-button').removeClass('hidden')
-  document.getElementById('rematch-button').classList.remove("hidden");
+  ui.rematchButton.classList.remove("hidden");
   // request full list of user's games (including one just added)
   // (this will automatically run checkForWin)
   onGetCompletedGames();
@@ -130,10 +137,9 @@ const onFinishGame = function () {
 
 // fetch record of user's completed games and use data to update stats displayed
 const onGetCompletedGames = function () {
+  console.log('onGetCompletedGames');
   // call to server to retrieve list of completed games
-  gameApi.getCompletedGames()
-
-      store.games.append(store.game);
+      store.games.push(store.game);
       // reset win and draw counts for reprocessing
       store.xWins = 0
       store.oWins = 0
@@ -148,11 +154,11 @@ const onGetCompletedGames = function () {
       }
       // display win and draw counts on page
       ui.updateWins()
-    })
 }
 
 // process latest move made to check for a win or swap turns accordingly
 const processMove = function () {
+  console.log('processMove');
   // update winner and winningCells variables using checkForWin function,
   // which returns x, o, draw, or incomplete
   const currentGameStatus = checkForWin(store.game.cells)
@@ -175,6 +181,7 @@ const processMove = function () {
 
 // test a single gaame to find win, draw, incomplete
 const checkForWin = function (cellsArray) {
+  console.log('checkForWin');
   // temporaty variables
   let winner = null
   let gameStatus = null
@@ -212,17 +219,17 @@ const checkForWin = function (cellsArray) {
   return gameStatus
 }
 
-module.exports = {
-  addHandlers: addHandlers,
-  swapTurns: swapTurns,
-  playHere: playHere,
-  processMove: processMove,
-  cellOccupied: cellOccupied,
-  winningLines: winningLines,
-  startNewGame: startNewGame,
-  onCreateGame: onCreateGame,
-  onUpdateGame: onUpdateGame,
-  onFinishGame: onFinishGame,
-  onGetCompletedGames: onGetCompletedGames,
-  checkForWin: checkForWin
+export {
+  addHandlers,
+  swapTurns,
+  playHere,
+  processMove,
+  cellOccupied,
+  winningLines,
+  startNewGame,
+  onCreateGame,
+  onUpdateGame,
+  onFinishGame,
+  onGetCompletedGames,
+  checkForWin
 }
