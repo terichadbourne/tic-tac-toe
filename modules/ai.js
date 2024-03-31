@@ -1,14 +1,12 @@
 import { store }  from './store.js';
 
-const botSpeed = 600;
+const botSpeed = 750;
 
 const aiPlayer = "o";
 
 const bots = ["random", "kid"];
 
 const selectCell = function (bot) {
-  console.log(`isFirstTurnOfGame: ${isFirstTurnOfGame()}`);
-  console.log(`isFirstTurnForBot: ${isFirstTurnForBot()}`);
   if (!bots.includes(bot)) {
     console.log("unknown bot passed");
   } else if (bot === "random") {
@@ -25,6 +23,7 @@ const selectCellAsRandom = function () {
 }
 
 const selectCellAsKid = function () {
+  console.log("playing as kid");
   return selectAtRandom();
 }
 
@@ -45,7 +44,6 @@ const getAvailableCells = function() {
 const selectAtRandom = function() {
   const available = getAvailableCells();
   const randomCellIndex = available[(Math.floor(Math.random() * available.length))];
-  console.log(`random available cell index: ${randomCellIndex}`);
   return randomCellIndex;
 }
 

@@ -10,7 +10,11 @@ const addHandlers = function () {
   ui.gameCells.forEach(gameCell => {
     gameCell.addEventListener("click", playHereHuman)
   });
-}
+  ui.opponentSelect.addEventListener("change", (event) => {
+    console.log('restarting match due to new oppponent');
+    resetMatch();
+  });
+};
 
 // start new game when rematch button is clicked
 const startNewGame = function (event) {
@@ -26,7 +30,7 @@ const startNewGame = function (event) {
   if (store.currentTurn === "o") {
     document.getElementById('player-x').classList.remove('active');
     document.getElementById('player-o').classList.add('active');
-    playComputer("random")
+    playComputer(ui.opponentSelect.value);
   } else {
     document.getElementById('player-x').classList.add('active');
     document.getElementById('player-o').classList.remove('active');
@@ -65,7 +69,6 @@ const playHereHuman = function (event) {
 
 const playComputer = function (bot) {
   const selectedCell = ai.selectCell(bot);
-  console.log(`computer player ${bot} chooses cell ${selectedCell}`)
   store.game.cells[selectedCell] = store.currentTurn;
   setTimeout(()=> {
    onUpdateGame(selectedCell, store.currentTurn);
@@ -81,7 +84,7 @@ const swapTurns = function () {
     ui.players.forEach(player => {
       player.classList.toggle("active");
     });
-    playComputer("random");
+    playComputer(ui.opponentSelect.value);
   } else if (store.currentTurn === 'o') {
     store.currentTurn = 'x'
     ui.players.forEach(player => {
@@ -140,8 +143,6 @@ const onUpdateGame = function (cellIndex, value) {
   ui.displayCells()
   // process move (check for wins, etc.)
   processMove()
-  ai.getAvailableCells();
-  ai.selectAtRandom();
 }
 
 // run when game is over to update status on server
@@ -240,6 +241,15 @@ const checkForWin = function (cellsArray) {
   }
   // return gameStatus as "x", "o", "draw", or "incomplete"
   return gameStatus
+}
+
+const resetMatch = function () {
+  store.games = []
+  store.xWins = 0;
+  store.oWins = 0;
+  store.draws = 0;
+  ui.updateWins();
+  startNewGame();
 }
 
 export {

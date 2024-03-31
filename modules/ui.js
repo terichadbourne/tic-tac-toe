@@ -9,6 +9,7 @@ import { store }  from './store.js';
 const gameCells =  Array.from(document.getElementsByClassName('game-cell'));
 const players = Array.from(document.getElementsByClassName('player'));
 const rematchButton = document.getElementById('rematch-button');
+const opponentSelect = document.getElementById('opponent-select');
 
 
 // display a message to the user
@@ -50,5 +51,5 @@ const hideWinningCells = function () {
 }
 
 export {
-  showMessage, clearMessage, displayCells, updateWins, showWinningCells, hideWinningCells, gameCells, players, rematchButton
+  showMessage, clearMessage, displayCells, updateWins, showWinningCells, hideWinningCells, gameCells, players, rematchButton, opponentSelect
 }
