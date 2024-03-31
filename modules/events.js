@@ -8,13 +8,12 @@ import * as ai from './ai.js';
 const addHandlers = function () {
   ui.rematchButton.addEventListener("click", startNewGame);
   ui.gameCells.forEach(gameCell => {
-    gameCell.addEventListener("click", playHere)
+    gameCell.addEventListener("click", playHereHuman)
   });
 }
 
 // start new game when rematch button is clicked
 const startNewGame = function (event) {
-  console.log('startNewGame');
   // clear message display
   ui.clearMessage()
   // set game state and current turn and clear out cells array
@@ -30,27 +29,41 @@ const startNewGame = function (event) {
 }
 
 // steps to take when user clicks on a cell on the game board
-const playHere = function (event) {
-  console.log('playHere');
-  // clear any previous messages
-  ui.clearMessage()
-  // if the game's not already over...
-  if (store.game.over === false) {
-    // if cell was blank, add symbol of current player to `store.cells` array,
-    // redisplay symbols on all cells, then swap players
-    // if ($(event.target).html() === '') {
-    if (event.currentTarget.innerHTML === '') {
-      store.game.cells[event.currentTarget.id] = store.currentTurn
-      // send new move to server (also will run displayCells and processMove
-      onUpdateGame(event.currentTarget.id, store.currentTurn)
-    // if cell was occupied, log error and prevent play and turn swap
-    } else {
-      ui.showMessage('That cell is already occupied. Try again!')
-    }
-  // else if game is over, alert that
+const playHereHuman = function (event) {
+  if (store.currentTurn === 'o') {
+    ui.showMessage("Oops! Not your turn yet.");
   } else {
-    ui.showMessage('This game is over. Click the button below for a rematch.')
+    // clear any previous messages
+    ui.clearMessage()
+    // if the game's not already over...
+    if (store.game.over === false) {
+      // if cell was blank, add symbol of current player to `store.cells` array,
+      // redisplay symbols on all cells, then swap players
+      // if ($(event.target).html() === '') {
+      if (event.currentTarget.innerHTML === '') {
+        store.game.cells[event.currentTarget.id] = store.currentTurn
+        // send new move to server (also will run displayCells and processMove
+        onUpdateGame(event.currentTarget.id, store.currentTurn)
+      // if cell was occupied, log error and prevent play and turn swap
+      } else {
+        ui.showMessage('That cell is already occupied. Try again!')
+      }
+    // else if game is over, alert that
+    } else {
+      ui.showMessage('This game is over. Click the button below for a rematch.')
+    }
   }
+
+}
+
+const playComputer = function (bot) {
+  const selectedCell = ai.selectCell(bot);
+  console.log(`computer player ${bot} chooses cell ${selectedCell}`)
+  store.game.cells[selectedCell] = store.currentTurn;
+  setTimeout(()=> {
+   onUpdateGame(selectedCell, store.currentTurn);
+  }
+  , ai.botSpeed);
 }
 
 // swap players' turns after a successful move (called from processMove)
@@ -61,6 +74,7 @@ const swapTurns = function () {
     ui.players.forEach(player => {
       player.classList.toggle("active");
     });
+    playComputer("random");
   } else if (store.currentTurn === 'o') {
     store.currentTurn = 'x'
     ui.players.forEach(player => {
@@ -87,7 +101,6 @@ const cellOccupied = (cell) => {
 // run when new player is logged in or new game is rquested, to create a new
 // game on the server and update the UI
 const onCreateGame = function (playerName) {
-  console.log('onCreateGame');
   store.game =
   { id: 1,
     cells: ["","","","","","","","",""],
@@ -126,7 +139,6 @@ const onUpdateGame = function (cellIndex, value) {
 
 // run when game is over to update status on server
 const onFinishGame = function () {
-  console.log('onFinishGame');
   // format data to show game is over
   store.game.over = true;
   // send to server
@@ -141,7 +153,6 @@ const onFinishGame = function () {
 
 // fetch record of user's completed games and use data to update stats displayed
 const onGetCompletedGames = function () {
-  console.log('onGetCompletedGames');
   // call to server to retrieve list of completed games
       store.games.push(store.game);
       // reset win and draw counts for reprocessing
@@ -162,7 +173,6 @@ const onGetCompletedGames = function () {
 
 // process latest move made to check for a win or swap turns accordingly
 const processMove = function () {
-  console.log('processMove');
   // update winner and winningCells variables using checkForWin function,
   // which returns x, o, draw, or incomplete
   const currentGameStatus = checkForWin(store.game.cells)
@@ -185,7 +195,6 @@ const processMove = function () {
 
 // test a single gaame to find win, draw, incomplete
 const checkForWin = function (cellsArray) {
-  console.log('checkForWin');
   // temporaty variables
   let winner = null
   let gameStatus = null
@@ -226,7 +235,7 @@ const checkForWin = function (cellsArray) {
 export {
   addHandlers,
   swapTurns,
-  playHere,
+  playHereHuman,
   processMove,
   cellOccupied,
   winningLines,
