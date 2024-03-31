@@ -50,8 +50,6 @@ const hideWinningCells = function () {
   });
 }
 
-
-
 export {
   showMessage, clearMessage, displayCells, updateWins, showWinningCells, hideWinningCells, gameCells, players, rematchButton
 }

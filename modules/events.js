@@ -3,6 +3,7 @@
 // require dependcies
 import { store }  from './store.js';
 import * as ui from './ui.js';
+import * as ai from './ai.js';
 
 const addHandlers = function () {
   ui.rematchButton.addEventListener("click", startNewGame);
@@ -25,7 +26,7 @@ const startNewGame = function (event) {
   document.getElementById('player-x').classList.add('active');
   document.getElementById('player-o').classList.remove('active');
   // hide rematch button
-//   rematchButton.classList.add('hidden');
+  ui.rematchButton.classList.add("hidden");
 }
 
 // steps to take when user clicks on a cell on the game board
@@ -77,6 +78,7 @@ const middleCell = 4
 
 const cornerCells = [0, 2, 6, 8]
 
+
 // callback function returns true if a cell contains an x or o already
 const cellOccupied = (cell) => {
   return cell === 'x' || cell === 'o'
@@ -118,6 +120,8 @@ const onUpdateGame = function (cellIndex, value) {
   ui.displayCells()
   // process move (check for wins, etc.)
   processMove()
+  ai.getAvailableCells();
+  ai.selectAtRandom();
 }
 
 // run when game is over to update status on server
