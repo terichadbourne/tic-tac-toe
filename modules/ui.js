@@ -32,8 +32,7 @@ const displayCells = function () {
 const updateWins = function () {
   document.getElementById('player-x-wins').innerHTML = store.xWins;
   document.getElementById('player-o-wins').innerHTML = store.oWins;
-  document.getElementById('player-x-draws').innerHTML = store.xDraws;
-  document.getElementById('player-o-draws').innerHTML = store.oDraws;
+  document.getElementById('draws').innerHTML = store.draws;
 }
 
 // highlight cells that make up the winning line

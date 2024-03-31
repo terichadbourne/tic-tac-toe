@@ -17,16 +17,23 @@ const startNewGame = function (event) {
   // clear message display
   ui.clearMessage()
   // set game state and current turn and clear out cells array
-  store.currentTurn = 'x'
+  store.currentTurn = store.startsFirst
   delete store.game
   // create new game on the server
   onCreateGame()
-  // set player x active and player o inactive
-  document.getElementById('player-x').classList.add('active');
-  document.getElementById('player-o').classList.remove('active');
   // hide rematch button
   ui.rematchButton.classList.add("hidden");
+  if (store.currentTurn === "o") {
+    document.getElementById('player-x').classList.remove('active');
+    document.getElementById('player-o').classList.add('active');
+    playComputer("random")
+  } else {
+    document.getElementById('player-x').classList.add('active');
+    document.getElementById('player-o').classList.remove('active');
+  }
 }
+
+
 
 // steps to take when user clicks on a cell on the game board
 const playHereHuman = function (event) {
@@ -141,6 +148,11 @@ const onUpdateGame = function (cellIndex, value) {
 const onFinishGame = function () {
   // format data to show game is over
   store.game.over = true;
+  if (store.startsFirst === "x") {
+    store.startsFirst = "o"
+  } else {
+    store.startsFirst = "x"
+  }
   // send to server
   // onUpdateGame(event.currentTarget.id, store.currentTurn)
   ui.displayCells()
@@ -158,8 +170,7 @@ const onGetCompletedGames = function () {
       // reset win and draw counts for reprocessing
       store.xWins = 0
       store.oWins = 0
-      store.xDraws = 0
-      store.oDraws = 0
+      store.draws = 0
       // if there are any games returned, determine the winner of each and
       // adjust counts
       if (store.games.length > 0) {
@@ -222,8 +233,7 @@ const checkForWin = function (cellsArray) {
   // gameStatus
   } else if (cellsArray.every(cellOccupied)) {
     gameStatus = 'draw'
-    store[`xDraws`]++
-    store[`oDraws`]++
+    store[`draws`]++
   // else if no win or draw, set gameStatus to incomplete
   } else {
     gameStatus = 'incomplete'
