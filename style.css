@@ -1,5 +1,3 @@
-
-
 :root {
   --off-white: #e5e5e5;
   --pink: #ffc7df;
@@ -62,7 +60,8 @@ table {
   border: 1px solid;
 }
 
-th, td {
+th,
+td {
   padding: 5px 10px;
 }
 
@@ -88,19 +87,19 @@ th, td {
   width: 30vw;
 }
 
-.game-row:first-of-type > .game-cell {
+.game-row:first-of-type>.game-cell {
   border-top: 0;
 }
 
-.game-row:last-of-type > .game-cell {
+.game-row:last-of-type>.game-cell {
   border-bottom: 0;
 }
 
-.game-row > .game-cell:first-of-type {
+.game-row>.game-cell:first-of-type {
   border-left: 0;
 }
 
-.game-row > .game-cell:last-of-type {
+.game-row>.game-cell:last-of-type {
   border-right: 0;
 }
 
@@ -150,13 +149,14 @@ th, td {
 }
 
 #message {
+  font-weight: bold;
   color: var(--purple);
   font-size: 18px;
   padding: 5px;
   text-align: center;
 }
 
-#player-turns > div {
+#player-turns>div {
   text-align: center;
 }
 

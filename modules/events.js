@@ -18,6 +18,7 @@ const addHandlers = function () {
 
 // start new game when rematch button is clicked
 const startNewGame = function (event) {
+  ui.setThinkAloudHeading();
   // clear message display
   ui.clearMessage()
   // set game state and current turn and clear out cells array
@@ -139,7 +140,6 @@ const onCreateGame = function (playerName) {
 
 // save current game state to server and udpate display after each move
 const onUpdateGame = function (cellIndex, value) {
-  console.log('onUpdateGame');
   // gather data needed for AJAX call
   store.game.cells[cellIndex] = value;
   // refresh display to add x or o
@@ -157,13 +157,8 @@ const onFinishGame = function () {
   } else {
     store.startsFirst = "x"
   }
-  // send to server
-  // onUpdateGame(event.currentTarget.id, store.currentTurn)
   ui.displayCells()
-  // $('#rematch-button').removeClass('hidden')
   ui.rematchButton.classList.remove("hidden");
-  // request full list of user's games (including one just added)
-  // (this will automatically run checkForWin)
   onGetCompletedGames();
 }
 
@@ -253,6 +248,7 @@ const resetMatch = function () {
   store.draws = 0;
   ui.updateWins();
   startNewGame();
+  ui.setThinkAloudHeading();
 }
 
 export {

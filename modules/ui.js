@@ -11,15 +11,18 @@ const players = Array.from(document.getElementsByClassName('player'));
 const rematchButton = document.getElementById('rematch-button');
 const opponentSelect = document.getElementById('opponent-select');
 const thinkAloudMsg = document.getElementById('think-aloud');
+const thinkAloudHeading = document.getElementById('think-aloud-heading');
 
-
+const setThinkAloudHeading = function () {
+  thinkAloudHeading.innerHTML = `${opponentSelect.value.toUpperCase()} BOT THINK-ALOUD:`;
+}
 
 const thinkAloudReplace = function (message) {
   thinkAloudMsg.innerHTML = message;
 }
 
 const thinkAloudAppend = function (message) {
-  thinkAloudMsg.innerHTML += ("<br>" + message);
+  thinkAloudMsg.innerHTML += (`<br><br>${message}`);
 }
 
 // display a message to the user
@@ -69,6 +72,7 @@ export {
   hideWinningCells,
   thinkAloudAppend,
   thinkAloudReplace,
+  setThinkAloudHeading,
   gameCells,
   players,
   rematchButton,

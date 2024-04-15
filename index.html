@@ -25,8 +25,9 @@
       <label for="opponent-select">Choose an opponent:</label>
 
       <select name="opponents" id="opponent-select">
-        <option value="kid">Kid (Medium)</option>
-        <option value="random">Random (Easy)</option>
+        <option value="avery" selected>Avery (Medium)</option>
+        <option value="bailey">Bailey (Hard)</option>
+        <option value="river">River (Easy)</option>
       </select>
 
       <section id="player-turns" class="row">
@@ -53,10 +54,10 @@
         </table>
       </section>
 
-      <p id="message"></p>
-
-      <h4>BOT THINK-ALOUD:</h4>
+      <h4 id="think-aloud-heading"></h4>
       <p id="think-aloud"></p>
+
+      <p id="message"></p>
 
       <button type="button" id="rematch-button" class='hidden'>Demand a Rematch!</button>
     </section>
