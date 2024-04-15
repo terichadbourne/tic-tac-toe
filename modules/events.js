@@ -1,7 +1,7 @@
 'use strict'
 
 // require dependcies
-import { store }  from './store.js';
+import { store } from './store.js';
 import * as ui from './ui.js';
 import * as ai from './ai.js';
 
@@ -45,7 +45,8 @@ const playHereHuman = function (event) {
     ui.showMessage("Oops! Not your turn yet.");
   } else {
     // clear any previous messages
-    ui.clearMessage()
+    ui.clearMessage();
+    ui.thinkAloudReplace("");
     // if the game's not already over...
     if (store.game.over === false) {
       // if cell was blank, add symbol of current player to `store.cells` array,
@@ -55,11 +56,11 @@ const playHereHuman = function (event) {
         store.game.cells[event.currentTarget.id] = store.currentTurn
         // send new move to server (also will run displayCells and processMove
         onUpdateGame(event.currentTarget.id, store.currentTurn)
-      // if cell was occupied, log error and prevent play and turn swap
+        // if cell was occupied, log error and prevent play and turn swap
       } else {
         ui.showMessage('That cell is already occupied. Try again!')
       }
-    // else if game is over, alert that
+      // else if game is over, alert that
     } else {
       ui.showMessage('This game is over. Click the button below for a rematch.')
     }
@@ -68,12 +69,13 @@ const playHereHuman = function (event) {
 }
 
 const playComputer = function (bot) {
+  ui.thinkAloudReplace("");
   const selectedCell = ai.selectCell(bot);
   store.game.cells[selectedCell] = store.currentTurn;
-  setTimeout(()=> {
-   onUpdateGame(selectedCell, store.currentTurn);
+  setTimeout(() => {
+    onUpdateGame(selectedCell, store.currentTurn);
   }
-  , ai.botSpeed);
+    , ai.botSpeed);
 }
 
 // swap players' turns after a successful move (called from processMove)
@@ -96,7 +98,7 @@ const swapTurns = function () {
 // array of arrays representing each set of cell indexes that represents a
 // winning line
 const winningLines = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7],
-  [2, 5, 8], [0, 4, 8], [2, 4, 6]]
+[2, 5, 8], [0, 4, 8], [2, 4, 6]]
 
 const middleCell = 4
 
@@ -112,8 +114,9 @@ const cellOccupied = (cell) => {
 // game on the server and update the UI
 const onCreateGame = function (playerName) {
   store.game =
-  { id: 1,
-    cells: ["","","","","","","","",""],
+  {
+    id: 1,
+    cells: ["", "", "", "", "", "", "", "", ""],
     over: false,
     player_x: {
       id: 2,
@@ -167,20 +170,20 @@ const onFinishGame = function () {
 // fetch record of user's completed games and use data to update stats displayed
 const onGetCompletedGames = function () {
   // call to server to retrieve list of completed games
-      store.games.push(store.game);
-      // reset win and draw counts for reprocessing
-      store.xWins = 0
-      store.oWins = 0
-      store.draws = 0
-      // if there are any games returned, determine the winner of each and
-      // adjust counts
-      if (store.games.length > 0) {
-        store.games.forEach((game) => {
-          checkForWin(game.cells)
-        })
-      }
-      // display win and draw counts on page
-      ui.updateWins()
+  store.games.push(store.game);
+  // reset win and draw counts for reprocessing
+  store.xWins = 0
+  store.oWins = 0
+  store.draws = 0
+  // if there are any games returned, determine the winner of each and
+  // adjust counts
+  if (store.games.length > 0) {
+    store.games.forEach((game) => {
+      checkForWin(game.cells)
+    })
+  }
+  // display win and draw counts on page
+  ui.updateWins()
 }
 
 // process latest move made to check for a win or swap turns accordingly
@@ -195,7 +198,7 @@ const processMove = function () {
     // if a draw, alert user
     if (currentGameStatus === 'draw') {
       ui.showMessage("It's a draw! Click below to start a new game.")
-    // if a win, alert user and highlght winning cells
+      // if a win, alert user and highlght winning cells
     } else {
       ui.showMessage(`Player ${currentGameStatus.toUpperCase()} has won the game!`)
       ui.showWinningCells()
@@ -230,12 +233,12 @@ const checkForWin = function (cellsArray) {
   if (winner) {
     gameStatus = winner
     store[`${winner}Wins`]++
-  // else if no winner but all cells full, add to both draw records and updates
-  // gameStatus
+    // else if no winner but all cells full, add to both draw records and updates
+    // gameStatus
   } else if (cellsArray.every(cellOccupied)) {
     gameStatus = 'draw'
     store[`draws`]++
-  // else if no win or draw, set gameStatus to incomplete
+    // else if no win or draw, set gameStatus to incomplete
   } else {
     gameStatus = 'incomplete'
   }

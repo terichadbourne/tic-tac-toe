@@ -4,13 +4,23 @@
      UI
 ***************************************/
 
-import { store }  from './store.js';
+import { store } from './store.js';
 
-const gameCells =  Array.from(document.getElementsByClassName('game-cell'));
+const gameCells = Array.from(document.getElementsByClassName('game-cell'));
 const players = Array.from(document.getElementsByClassName('player'));
 const rematchButton = document.getElementById('rematch-button');
 const opponentSelect = document.getElementById('opponent-select');
+const thinkAloudMsg = document.getElementById('think-aloud');
 
+
+
+const thinkAloudReplace = function (message) {
+  thinkAloudMsg.innerHTML = message;
+}
+
+const thinkAloudAppend = function (message) {
+  thinkAloudMsg.innerHTML += ("<br>" + message);
+}
 
 // display a message to the user
 const showMessage = function (message) {
@@ -51,5 +61,16 @@ const hideWinningCells = function () {
 }
 
 export {
-  showMessage, clearMessage, displayCells, updateWins, showWinningCells, hideWinningCells, gameCells, players, rematchButton, opponentSelect
+  showMessage,
+  clearMessage,
+  displayCells,
+  updateWins,
+  showWinningCells,
+  hideWinningCells,
+  thinkAloudAppend,
+  thinkAloudReplace,
+  gameCells,
+  players,
+  rematchButton,
+  opponentSelect
 }

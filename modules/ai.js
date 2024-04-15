@@ -1,4 +1,5 @@
 import { store } from './store.js';
+import * as ui from './ui.js';
 
 const botSpeed = 900;
 
@@ -9,14 +10,10 @@ const empty = "";
 const bots = ["kid", "random"];
 
 const centerCell = 4;
-
-const cells = [0, 1, 2, 3, 4, 5, 6, 7, 8]
-
 const cornerCells = [0, 2, 6, 8];
 
 const lines = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7],
 [2, 5, 8], [0, 4, 8], [2, 4, 6]]
-
 
 
 /*** AI STRATEGIES ***/
@@ -26,8 +23,10 @@ const selectCell = function (bot) {
   if (!bots.includes(bot)) {
     console.log("unknown bot passed");
   } else if (bot === "random") {
+    ui.thinkAloudReplace("Random says...");
     return selectCellAsRandom();
   } else if (bot === "kid") {
+    ui.thinkAloudReplace("Kid says...");
     return selectCellAsKid();
   }
 }
@@ -41,13 +40,21 @@ const selectCellAsRandom = function () {
 // strategy of "Kid" bot (student model round 1)
 const selectCellAsKid = function () {
   console.log("playing as kid");
+  console.log("store.game.cells: ", store.game.cells);
   if (isFirstTurnOfGame()) {
+    ui.thinkAloudAppend("Because it's the first turn of the game, I'm playing in the center.")
     return selectCenter();
-  } else if (canWinThisTurn(aiPlayer)) {
+  } else {
+    ui.thinkAloudAppend("<br>It's not the first turn of the game.");
+  }
+  if (canWinThisTurn(aiPlayer)) {
+    ui.thinkAloudAppend("<br>I'm see a place where I can win this turn!");
     return selectWinningCell(aiPlayer);
   } else {
-    return selectAtRandom();
+    ui.thinkAloudAppend("<br>I looked and I don't see a place where I can win this turn.");
   }
+  ui.thinkAloudAppend("<br>I'm selecting a cell at random.");
+  return selectAtRandom();
 }
 
 /***** MOVES  ******/
@@ -65,6 +72,7 @@ const selectCenter = function () {
 }
 
 /**** HELPER FUNCTIONS: GAME STATE, ETC  *********/
+
 
 // returns whether this is the first move of the game
 const isFirstTurnOfGame = function () {
@@ -99,7 +107,7 @@ const getAvailableCells = function () {
 }
 
 const getAvailableCornerCells = function () {
-  return cornerCells.filter((cell) => isEmpty(cell));
+  return cornerCells.filter(cell => isEmpty(cell));
 }
 
 const centerIsAvaialble = function () {
@@ -108,7 +116,7 @@ const centerIsAvaialble = function () {
 
 // returns whether given cell is empty
 const isEmpty = function (cell) {
-  return cells[cell] === empty;
+  return store.game.cells[cell] === empty;
 }
 
 const isCorner = function (cell) {
@@ -117,33 +125,27 @@ const isCorner = function (cell) {
 
 // returns whether given cell belongs to given player
 const belongsToPlayer = function (cell, player) {
-  return cells[cell] === player;
+  console.log(`[belongsToPlayer] cell ${cell} belongs to player ${player}: ${store.game.cells[cell] === player}`);
+  return store.game.cells[cell] === player;
 }
-
-// returns whether given cell belongs to bot
-const belongsToAi = function (cell) {
-  return belongsToPlayer(cell, aiPlayer);
-}
-
-// returns whether given cell belongs to human
-const belongsToHuman = function (cell) {
-  return belongsToPlayer(cell, humanPlayer);
-}
-
 
 // returns array of all cells where a given player can win this turn 
 const cellsThatCanWinThisTurn = function (player) {
+  console.log('in cellsThatCanWinThisTurn');
   const winningCells = [];
-  lines.forEach(line => {
+  lines.forEach((line) => {
+    console.log("line: ", line);
     if (canWinInOne(line, player)) {
       winningCells.push(emptyCellsInLine(line)[0]);
     }
-  })
+  });
   return winningCells;
 }
 
 // returns whether a given player can win this turn 
 const canWinThisTurn = function (player) {
+  console.log('in can win this turn');
+  console.log(cellsThatCanWinThisTurn(player));
   return cellsThatCanWinThisTurn(player).length > 0;
 }
 
@@ -157,32 +159,37 @@ const selectWinningCell = function (player) {
 
 // returns whether a given line is "owned" by a given player (they have at least one cell in it and the other player doesn't)
 const lineOwnedByPlayer = function (line, player) {
-  return line.some((cell) => belongsToPlayer(cell, player)) && !line.some((cell) => belongsToPlayer(cell, opponentOf(player)));
+  return line.some(cell => belongsToPlayer(cell, player)) && !line.some((cell) => belongsToPlayer(cell, opponentOf(player)));
 }
 
 // returns whether given player can win on a given line in exactly 1 turn
 const canWinInOne = function (line, player) {
-  return playerCountCellsInLine(line, player) === 2 && emptyCellsInLine(line)[0] === 1;
+  console.log(`[canWinInOne] ${player} can win in 1 for lin ${line}: ${playerCountCellsInLine(line, player) === 2 && emptyCountCellsInLine(line) === 1}`);
+  return playerCountCellsInLine(line, player) === 2 && emptyCountCellsInLine(line) === 1;
 }
 
 // returns whether given player can win on a given line in exactly 2 turns
 const canWinInTwo = function (line, player) {
-  return playerCountCellsInLine(line, player) === 1 && emptyCountCellsInLine(line)[0] === 2;
+  console.log(`[canWinInOne] ${player} can win in 2 for lin ${line}: ${playerCountCellsInLine(line, player) === 1 && emptyCountCellsInLine(line) === 2}`);
+  return playerCountCellsInLine(line, player) === 1 && emptyCountCellsInLine(line) === 2;
 }
 
 // returns count of cells belonging to given player in given line 
 const playerCountCellsInLine = function (line, player) {
-  return line.map((cell) => belongsToPlayer(cell, player)).length;
+  console.log(`[playerCountCellsInLine] player ${player} has ${line.filter(cell => belongsToPlayer(cell, player)).length} cells in line ${line}`);
+  return line.filter(cell => belongsToPlayer(cell, player)).length;
 }
 
 // returns count of empty cells in given line
 const emptyCountCellsInLine = function (line) {
-  return line.filter((cell) => isEmpty(cell)).length;
+  console.log(`[emptyCountCellsInLine] ${line.filter(cell => isEmpty(cell)).length}`);
+  return line.filter(cell => isEmpty(cell)).length;
 }
 
 // returns cell indices of empty cells in given line
 const emptyCellsInLine = function (line) {
-  return line.filter((cell) => isEmpty(cell));
+  console.log(`[emptyCellsInLine] for line ${line}: line.filter(cell => isEmpty(cell))`);
+  return line.filter(cell => isEmpty(cell));
 }
 
 
