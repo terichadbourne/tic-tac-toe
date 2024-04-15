@@ -1,90 +1,91 @@
 <!DOCTYPE html>
 <html>
 
-    <head>
-      <title>Tic Tac Toe</title>
-      <meta name="viewport" content="width=device-width, initial-scale=1">
+<head>
+  <title>Tic Tac Toe</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-      <!-- Do not add `link` tags-->
-      <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
-      <link rel="stylesheet" href="./style.css">
-      <!-- Do not add `script` tags-->
-      <script type="module" src="./index.js"></script>
-    </head>
+  <!-- Do not add `link` tags-->
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+  <link rel="stylesheet" href="./style.css">
+  <!-- Do not add `script` tags-->
+  <script type="module" src="./index.js"></script>
+</head>
 
-    <body class="container-fluid">
+<body class="container-fluid">
 
-      <nav class="navbar navbar-light bg-light">
-        <span class="navbar-brand">Tic Tac Toe</span>
-      </nav>
-      <main>
-        <section id="stats-n-stuff">
+  <nav class="navbar navbar-light bg-light">
+    <span class="navbar-brand">Tic Tac Toe</span>
+  </nav>
+  <main>
+    <section id="stats-n-stuff">
 
-          <p class="auth-alert-main"></p>
+      <p class="auth-alert-main"></p>
 
-          <label for="opponent-select">Choose an opponent:</label>
+      <label for="opponent-select">Choose an opponent:</label>
 
-        <select name="opponents" id="opponent-select">
-          <option value="random">Random (Easy)</option>
-          <option value="kid">Kid (Medium)</option>
-        </select>
+      <select name="opponents" id="opponent-select">
+        <option value="kid">Kid (Medium)</option>
+        <option value="random">Random (Easy)</option>
+      </select>
 
-          <section id="player-turns" class="row">
-            <div class="col-xs-12">
-              <p id="player-x" class="player active">Player X: <span id="player-x-email">Human</span></p>
-            </div>
-            <div class="col-xs-12">
-              <p id="player-o" class="player">Player O: <span id="player-o-email">Computer</span></p>
-            </div>
-          </section>
+      <section id="player-turns" class="row">
+        <div class="col-xs-12">
+          <p id="player-x" class="player active">Player X: <span id="player-x-email">Human</span></p>
+        </div>
+        <div class="col-xs-12">
+          <p id="player-o" class="player">Player O: <span id="player-o-email">Computer</span></p>
+        </div>
+      </section>
 
-          <section id="player-turns" class="row">
-            <table>
-              <tr>
-                <th>Player X Wins</td>
-                <th>Draws</td>
-                <th>Player O Wins</td>
-              </tr>
-              <tr>
-                <td><span id="player-x-wins">0</span></td>
-                <td><span id="draws">0</span></td>
-                <td><span id="player-o-wins">0</span></td>
-              </tr>
-            </table>
-          </section>
+      <section id="player-turns" class="row">
+        <table>
+          <tr>
+            <th>Player X Wins</td>
+            <th>Draws</td>
+            <th>Player O Wins</td>
+          </tr>
+          <tr>
+            <td><span id="player-x-wins">0</span></td>
+            <td><span id="draws">0</span></td>
+            <td><span id="player-o-wins">0</span></td>
+          </tr>
+        </table>
+      </section>
 
-          <p id="message"></p>
+      <p id="message"></p>
 
-          <button type="button" id="rematch-button" class='hidden'>Demand a Rematch!</button>
-        </section>
+      <button type="button" id="rematch-button" class='hidden'>Demand a Rematch!</button>
+    </section>
 
-        <section id="surround-game-board">
+    <section id="surround-game-board">
 
-          <section id="game-board">
-            <div class="row game-row">
-              <div class="game-cell col-xs-4" id="0">a</div>
-              <div class="game-cell col-xs-4" id="1">b</div>
-              <div class="game-cell col-xs-4" id="2">c</div>
-            </div>
-            <div class="row game-row">
-              <div class="game-cell col-xs-4" id="3">d</div>
-              <div class="game-cell col-xs-4" id="4">e</div>
-              <div class="game-cell col-xs-4" id="5">f</div>
-            </div>
-            <div class="row game-row">
-              <div class="game-cell col-xs-4" id="6"></div>
-              <div class="game-cell col-xs-4" id="7"></div>
-              <div class="game-cell col-xs-4" id="8"></div>
-            </div>
-          </section>
+      <section id="game-board">
+        <div class="row game-row">
+          <div class="game-cell col-xs-4" id="0">a</div>
+          <div class="game-cell col-xs-4" id="1">b</div>
+          <div class="game-cell col-xs-4" id="2">c</div>
+        </div>
+        <div class="row game-row">
+          <div class="game-cell col-xs-4" id="3">d</div>
+          <div class="game-cell col-xs-4" id="4">e</div>
+          <div class="game-cell col-xs-4" id="5">f</div>
+        </div>
+        <div class="row game-row">
+          <div class="game-cell col-xs-4" id="6"></div>
+          <div class="game-cell col-xs-4" id="7"></div>
+          <div class="game-cell col-xs-4" id="8"></div>
+        </div>
+      </section>
 
-        </section>
-      </main>
-      <footer class="row">
-        <p><em>Built by <a href="https://github.com/terichadbourne">Teri Chadbourne</a></em>Icon by <a href="https://www.freepik.com/icon/tic-tac-toe_566294">Freepik</a></p>
+    </section>
+  </main>
+  <footer class="row">
+    <p><em>Built by <a href="https://github.com/terichadbourne">Teri Chadbourne</a></em>Icon by <a
+        href="https://www.freepik.com/icon/tic-tac-toe_566294">Freepik</a></p>
 
-      </footer>
+  </footer>
 
-    </body>
+</body>
 
 </html>
