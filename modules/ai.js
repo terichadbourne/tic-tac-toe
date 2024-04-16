@@ -1,34 +1,33 @@
 import { store } from './store.js';
 import * as ui from './ui.js';
 
+/*************************************
+*         CONSTANTS                  *
+**************************************/
+
+const bots = ["avery", "bailey", "river"];
+
 const botSpeed = 900;
 
 const aiPlayer = "o";
 const humanPlayer = "x";
 const empty = "";
 
-// River = True random play (easy)
-// Avery = Student model with poor sequencing - only what was explicitly stated  (medium)
-// Bailey = Student model with better sequencing - what was explicity stated or demonstrated consistently (hard)
-const bots = ["avery", "bailey", "river"];
-
 const centerCell = 4;
 const cornerCells = [0, 2, 6, 8];
-
 const lines = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7],
 [2, 5, 8], [0, 4, 8], [2, 4, 6]]
 
-/* shuffle sequence in-place w/ Durstenfeld algorithm */
-function shuffleArray(array) {
-  for (var i = array.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i + 1));
-    var temp = array[i];
-    array[i] = array[j];
-    array[j] = temp;
-  }
-}
+/*************************************
+*         BOT STRATEGIES             *
+**************************************/
 
-/*** AI STRATEGIES ***/
+/* 
+  BOTS: 
+    River = True random play (easy)
+    Avery = Student model with poor sequencing - only what was explicitly stated  (medium)
+    Bailey = Student model with better sequencing - what was explicity stated OR demonstrated consistently (hard)
+*/
 
 // determines which bot is playing and applies appropriate strategy
 const selectCell = function (bot) {
@@ -43,61 +42,116 @@ const selectCell = function (bot) {
   }
 }
 
-// strategy of "River" bot - truly random
+/*******   RIVER BOT: Random play  ******/
 const selectCellAsRiver = function () {
   ui.thinkAloudReplace("I'm playing at random.");
   return selectAtRandom();
 }
 
-// strategy of "Bailey" bot - Initial student model with better sequencing - what was explicity stated or demonstrated consistently
+/********   BAILEY BOT: Student model w/ better sequencing  *****/
 const selectCellAsBailey = function () {
+
+  // OPENING MOVE
   if (isFirstTurnOfGame()) {
-    ui.thinkAloudReplace("It's the first turn of the game, so I'm playing in the center.")
+    ui.thinkAloudReplace("When I go first, I play in the middle so I'll have lots of options.")
     return selectCenter();
+  } else if (isFirstTurnForBot() && isEmpty(centerCell)) {
+    ui.thinkAloudReplace("I'm playing in the middle because it gives me lots of options and blocks one of your options.");
+    return selectCenter();
+  } else if (isFirstTurnForBot() && belongsToPlayer(centerCell, humanPlayer)) {
+    ui.thinkAloudReplace("I didn't get to go first, and you already took the middle, so I'll play in a corner to block one of your options and make multiple options for myself.");
+    return selectRandomCorner();
   } else {
     ui.thinkAloudReplace("It's not the first turn of the game.");
   }
+
+
+  // ATTEMPT TO WIN NOW
   if (canWinThisTurn(aiPlayer)) {
     ui.thinkAloudAppend("I'm see a place where I can win this turn!");
     return selectWinningCell(aiPlayer);
   } else {
     ui.thinkAloudAppend("I don't see anywhere I can win this turn.");
   }
+
+  // ATTEMPT TO BLOCK IMPENDING OPPONENT WIN
   if (canWinThisTurn(humanPlayer)) {
     ui.thinkAloudAppend("I see a spot where you could win next turn, so I'm blocking you.");
     return selectWinningCell(humanPlayer);
   } else {
     ui.thinkAloudAppend("I don't see anywhere you could win next turn, so I don't need to block you.");
   }
+
+  // SET UP FUTURE WIN, BALANCING OFFENSE / DEFENSE
   if (canWinNextTurn(aiPlayer)) {
-    const [maxLinesOfTwoPerCell, bestCells] = selectSecondCellInLine(aiPlayer);
-    ui.thinkAloudAppend("I'm looking for places I could go now that would let me win next turn.")
-    ui.thinkAloudAppend(`If I go here then there will be ${maxLinesOfTwoPerCell} place${maxLinesOfTwoPerCell > 1 ? "s" : ""} I could win next turn${maxLinesOfTwoPerCell === 1 ? "." : ", and you can only block 1 of them."}`);
-    return bestCells[0];
+    const [maxOffensiveLinesOfTwoPerCell, bestOffensiveCells] = selectSecondCellInLine(aiPlayer);
+    ui.thinkAloudAppend(`I'm looking for places I could go now that would let me win next turn. I see ${bestOffensiveCells.length} places where I could go now that would each give me ${maxOffensiveLinesOfTwoPerCell} ways to win next turn. Let me see if any of those options would be best defensively...`);
+    // check whether any of these best offensive options can also be defensive
+    const defensiveCellCounts = cellsThatCanBeSecondInLine(humanPlayer);
+    let defensiveScores = Object.keys(defensiveCellCounts)
+      .filter(key => bestOffensiveCells.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = defensiveCellCounts[key];
+        return obj;
+      }, {});
+    if (Object.keys(defensiveScores).length > 0) {
+      const maxDefensiveLines = Math.max.apply(null, Object.values(defensiveScores));
+      const bestDefensiveCellsAmonstBestOffensiveCells = Object.keys(defensiveScores).filter(x => {
+        return defensiveScores[x] === maxDefensiveLines;
+      });
+      ui.thinkAloudAppend(`I'm going here because there will be ${maxOffensiveLinesOfTwoPerCell} way(s) I could win next turn and I'm blocking you in ${maxDefensiveLines} direction(s).`);
+      return bestDefensiveCellsAmonstBestOffensiveCells[0];
+    } else {
+      ui.thinkAloudAppend(`It won't help with defense, but I'm going here because there will be ${maxOffensiveLinesOfTwoPerCell} way(s) I could win next turn."}`);
+      return bestOffensiveCells[0];
+    }
   } else {
     ui.thinkAloudAppend("I don't see any places I could go now that would let me win next turn.")
   }
+
+  // PLAY AT RANDOM
   ui.thinkAloudAppend("I'm picking a cell at random.");
   return selectAtRandom();
 }
 
-// strategy of "Avery" bot - Initial student model with poor sequencing - only what was explicity stated
+/******** AVERY BOT: Student model w/ poor sequencing *******/
+
 const unsequencedAveryStrategies = ["winThisTurn", "blockOpponentWin", "setUpWinForNextTurn"];
 
+/* shuffle in-place using Durstenfeld algorithm */
+const shuffleArr = function (arr) {
+  for (var i = arr.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var temp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = temp;
+  }
+}
+
 const selectCellAsAvery = function () {
+  // OPENING MOVE (same as Bailey)
   if (isFirstTurnOfGame()) {
-    ui.thinkAloudReplace("It's the first turn of the game, so I'm playing in the center.")
+    ui.thinkAloudReplace("When I go first, I play in the middle so I'll have lots of options.")
     return selectCenter();
+  } else if (isFirstTurnForBot() && isEmpty(centerCell)) {
+    ui.thinkAloudReplace("I'm playing in the middle because it gives me lots of options and blocks one of your options.");
+    return selectCenter();
+  } else if (isFirstTurnForBot() && belongsToPlayer(centerCell, humanPlayer)) {
+    ui.thinkAloudReplace("I didn't get to go first, and you already took the middle, so I'll play in a corner to block one of your options and make multiple options for myself.");
+    return selectRandomCorner();
   } else {
     ui.thinkAloudReplace("It's not the first turn of the game.");
   }
-  shuffleArray(unsequencedAveryStrategies);
-  console.log('Avery strategies after shuffle: ', unsequencedAveryStrategies);
+
+  // SELECT FROM UNSEQUENCED STRATEGIES IN RANDOM ORDER
+  shuffleArr(unsequencedAveryStrategies);
+  // console.log('Avery strategies after shuffle: ', unsequencedAveryStrategies);
   let returnVal = null;
   let i = 0;
   while (!returnVal && i < unsequencedAveryStrategies.length) {
-    console.log(`loop ${1}: ${unsequencedAveryStrategies[i]}`);
     switch (unsequencedAveryStrategies[i]) {
+
+      // ATTEMPT TO WIN NOW
       case 'winThisTurn':
         if (canWinThisTurn(aiPlayer)) {
           ui.thinkAloudAppend("I'm see a place where I can win this turn!");
@@ -106,6 +160,8 @@ const selectCellAsAvery = function () {
           ui.thinkAloudAppend("I don't see anywhere I can win this turn.");
         }
         break;
+
+      // ATTEMPT TO BLOCK IMPENDING OPPONENT WIN
       case 'blockOpponentWin':
         if (canWinThisTurn(humanPlayer)) {
           ui.thinkAloudAppend("I see a spot where you could win next turn, so I'm blocking you.");
@@ -114,12 +170,31 @@ const selectCellAsAvery = function () {
           ui.thinkAloudAppend("I don't see anywhere you could win next turn, so I don't need to block you.");
         }
         break;
+
+      // SET UP FUTURE WIN, BALANCING OFFENSE / DEFENSE
       case 'setUpWinForNextTurn':
         if (canWinNextTurn(aiPlayer)) {
-          const [maxLinesOfTwoPerCell, bestCells] = selectSecondCellInLine(aiPlayer);
-          ui.thinkAloudAppend("I'm looking for places I could go now that would let me win next turn.")
-          ui.thinkAloudAppend(`If I go here then there will be ${maxLinesOfTwoPerCell} place${maxLinesOfTwoPerCell > 1 ? "s" : ""} I could win next turn${maxLinesOfTwoPerCell === 1 ? "." : ", and you can only block 1 of them."}`);
-          returnVal = bestCells[0];
+          const [maxOffensiveLinesOfTwoPerCell, bestOffensiveCells] = selectSecondCellInLine(aiPlayer);
+          ui.thinkAloudAppend(`I'm looking for places I could go now that would let me win next turn. I see ${bestOffensiveCells.length} places where I could go now that would each give me ${maxOffensiveLinesOfTwoPerCell} ways to win next turn. Let me see if any of those options would be best defensively...`);
+          // check whether any of these best offensive options can also be defensive
+          const defensiveCellCounts = cellsThatCanBeSecondInLine(humanPlayer);
+          let defensiveScores = Object.keys(defensiveCellCounts)
+            .filter(key => bestOffensiveCells.includes(key))
+            .reduce((obj, key) => {
+              obj[key] = defensiveCellCounts[key];
+              return obj;
+            }, {});
+          if (Object.keys(defensiveScores).length > 0) {
+            const maxDefensiveLines = Math.max.apply(null, Object.values(defensiveScores));
+            const bestDefensiveCellsAmonstBestOffensiveCells = Object.keys(defensiveScores).filter(x => {
+              return defensiveScores[x] === maxDefensiveLines;
+            });
+            ui.thinkAloudAppend(`I'm going here because there will be ${maxOffensiveLinesOfTwoPerCell} way(s) I could win next turn and I'm blocking you in ${maxDefensiveLines} direction(s).`);
+            returnVal = bestDefensiveCellsAmonstBestOffensiveCells[0];
+          } else {
+            ui.thinkAloudAppend(`It won't help with defense, but I'm going here because there will be ${maxOffensiveLinesOfTwoPerCell} way(s) I could win next turn."}`);
+            returnVal = bestOffensiveCells[0];
+          }
         } else {
           ui.thinkAloudAppend("I don't see any places I could go now that would let me win next turn.")
         }
@@ -137,7 +212,9 @@ const selectCellAsAvery = function () {
   }
 }
 
-/***** MOVES  ******/
+/*************************************
+*         MOVES                      *
+**************************************/
 
 // selects an available cell at random 
 const selectAtRandom = function () {
@@ -151,8 +228,23 @@ const selectCenter = function () {
   return centerCell;
 }
 
-/**** HELPER FUNCTIONS: GAME STATE, ETC  *********/
+// select randomly among corner cells
+const selectRandomCorner = function () {
+  const available = getAvailableCornerCells();
+  const randomCornerCellIndex = available[(Math.floor(Math.random() * available.length))];
+  return randomCornerCellIndex;
+}
 
+// select randomly among cells that can win this turn for given player
+const selectWinningCell = function (player) {
+  const winningCells = cellsThatCanWinThisTurn(player);
+  const winningCellIndex = winningCells[(Math.floor(Math.random() * winningCells.length))];
+  return winningCellIndex;
+}
+
+/*************************************
+*      HELPERS: GAME STATE, ETC      *
+**************************************/
 
 // returns whether this is the first move of the game
 const isFirstTurnOfGame = function () {
@@ -173,7 +265,27 @@ const opponentOf = function (player) {
   }
 }
 
-/**** HELPER FUNCTIONS: CELL STATUS *********/
+// returns whether a given player can win this turn 
+const canWinThisTurn = function (player) {
+  // console.log(`[canWinThisTurn] ${cellsThatCanWinThisTurn(player).length > 0}`);
+  return cellsThatCanWinThisTurn(player).length > 0;
+}
+
+// returns whether a given player can set themselves up now to win next turn 
+const canWinNextTurn = function (player) {
+  const nextCells = cellsThatCanBeSecondInLine(player);
+  // console.log('[canWinNextTurn] nextCells, keys, keys.length');
+  // console.log(nextCells);
+  // console.log(Object.keys(nextCells));
+  // console.log(Object.keys(nextCells).length);
+  // console.log('Object.keys(nextCells).length > 0: ', Object.keys(nextCells).length > 0);
+  return Object.keys(nextCells).length > 0;
+}
+
+
+/*************************************
+*      HELPERS: CELL STATUS      *
+**************************************/
 
 // returns array of available cells
 const getAvailableCells = function () {
@@ -186,21 +298,14 @@ const getAvailableCells = function () {
   return availableCells;
 }
 
+// returns array of available corner cells
 const getAvailableCornerCells = function () {
   return cornerCells.filter(cell => isEmpty(cell));
-}
-
-const centerIsAvailable = function () {
-  return isEmpty(centerCell);
 }
 
 // returns whether given cell is empty
 const isEmpty = function (cell) {
   return store.game.cells[cell] === empty;
-}
-
-const isCorner = function (cell) {
-  return cornerCells.includes(cell);
 }
 
 // returns whether given cell belongs to given player
@@ -240,26 +345,9 @@ const cellsThatCanBeSecondInLine = function (player) {
   return nextCellCounter;
 }
 
-// returns whether a given player can win this turn 
-const canWinThisTurn = function (player) {
-  // console.log(`[canWinThisTurn] ${cellsThatCanWinThisTurn(player).length > 0}`);
-  return cellsThatCanWinThisTurn(player).length > 0;
-}
-const canWinNextTurn = function (player) {
-  const nextCells = cellsThatCanBeSecondInLine(player);
-  // console.log('[canWinNextTurn] nextCells, keys, keys.length');
-  // console.log(nextCells);
-  // console.log(Object.keys(nextCells));
-  // console.log(Object.keys(nextCells).length);
-  // console.log('Object.keys(nextCells).length > 0: ', Object.keys(nextCells).length > 0);
-  return Object.keys(nextCells).length > 0;
-}
-
-// returns a cell that can win this turn for given player
-const selectWinningCell = function (player) {
-  return cellsThatCanWinThisTurn(player)[0];
-}
-
+// returns array containing: 
+//    - max number of lines a specific cell play could increase to two per line
+//    - array of cells that would acheive that result
 const selectSecondCellInLine = function (player) {
   // console.log(`[selectSecondCellInLine]`);
   const nextCells = cellsThatCanBeSecondInLine(player);
@@ -273,12 +361,10 @@ const selectSecondCellInLine = function (player) {
   return [maxLinesOfTwoPerCell, bestCells];
 }
 
-/**** HELPER FUNCTIONS: LINE STATUS *********/
 
-// returns whether a given line is "owned" by a given player (they have at least one cell in it and the other player doesn't)
-const lineOwnedByPlayer = function (line, player) {
-  return line.some(cell => belongsToPlayer(cell, player)) && !line.some((cell) => belongsToPlayer(cell, opponentOf(player)));
-}
+/*************************************
+*      HELPERS: LINE STATUS          *
+**************************************/
 
 // returns whether given player can win on a given line in exactly 1 turn
 const canWinLineInOne = function (line, player) {
@@ -312,5 +398,5 @@ const emptyCellsInLine = function (line) {
 
 
 export {
-  selectAtRandom, getAvailableCells, selectCell, selectCellAsRiver as selectCellAsRandom, selectCellAsBailey as selectCellAsKid, botSpeed
+  botSpeed, selectCell
 }

@@ -66,7 +66,6 @@ const playHereHuman = function (event) {
       ui.showMessage('This game is over. Click the button below for a rematch.')
     }
   }
-
 }
 
 const playComputer = function (bot) {
@@ -253,15 +252,7 @@ const resetMatch = function () {
 
 export {
   addHandlers,
-  swapTurns,
-  playHereHuman,
-  processMove,
-  cellOccupied,
-  winningLines,
-  startNewGame,
-  onCreateGame,
-  onUpdateGame,
-  onFinishGame,
-  onGetCompletedGames,
-  checkForWin
+
+  startNewGame
+
 }
