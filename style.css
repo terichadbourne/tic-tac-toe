@@ -220,4 +220,8 @@ td {
     height: calc(100vh - 80px);
     width: 38%;
   }
+
+  #think-aloud {
+    font-size: 24px;
+  }
 }
